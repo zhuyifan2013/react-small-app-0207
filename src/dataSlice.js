@@ -23,9 +23,9 @@ export const dataSlice = createSlice({
             state.descendNumber = action.payload
             state.participants.sort(function (a, b) {
                 if (a.diagnoses.length > b.diagnoses.length)
-                    return state.descend ? 1 : -1
+                    return state.descendNumber ? 1 : -1
                 if (a.diagnoses.length < b.diagnoses.length)
-                    return state.descend ? -1 : 1
+                    return state.descendNumber ? -1 : 1
                 return 0
 
             })
