@@ -156,7 +156,7 @@ const styles = {
         backgroundColor: "#f6f7fa",
         padding: 20,
         height: "90vh",
-        overflowY: "hidden"
+        overflowY: "visible"
     },
     homeCard: {
         padding: 20,
