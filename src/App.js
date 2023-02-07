@@ -1,15 +1,10 @@
-import logo from './logo.svg';
 import './App.css';
-import {Button, Card, ListGroup, OverlayTrigger} from "react-bootstrap";
+import {Button, Card} from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {jsonData} from "./DataSource";
-import {useState} from 'react';
-import {Routes, Route, Outlet, Link, Router, useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import {selected, sort} from "./dataSlice";
-import upIcon from "./assets/chevron.up.png";
-import downIcon from "./assets/chevron.down.png";
-import leftIcon from "./assets/chevron.left.png";
+import {selected, setCursor, sortName, sortNumber,} from "./dataSlice";
+import {useEffect, useState} from "react";
 
 export function App() {
     // const testData = JSON.parse(jsonData);
@@ -18,39 +13,80 @@ export function App() {
     const dispatch = useDispatch()
     const downIcon = require("./assets/chevron.down.png")
     const upIcon = require("./assets/chevron.up.png")
+    const [hoverIndex, setHoverIndex] = useState(-1);
+    const [init, setInit] = useState(false);
+    var refs = {}
 
-    function sortClick() {
-        dispatch(sort(!homeData.descend))
+    function sortNumberClick() {
+        dispatch(sortNumber(!homeData.descendNumber))
+    }
+
+    function sortNameClick() {
+        dispatch(sortName(!homeData.descendName))
     }
 
     function itemSelected(index) {
         dispatch(selected(index))
     }
 
+    function handleHoverIndex(index) {
+        setHoverIndex(index)
+    }
+
+    useEffect(() => {
+        if(refs[homeData.index]!=null && !init) {
+            refs[homeData.index].scrollIntoView()
+            setInit(true)
+        }
+    }, [refs, homeData.index, init])
+
     return (
+
         <div style={styles.home}>
             <h2 style={styles.titleText}>Participants</h2>
-
             <Card style={styles.homeCard}>
                 <div className="row" style={styles.tableTitle}>
-                    <div className="col-6">Participant Name</div>
+                    <div className="col-6">
+                        Participant Name
+                        <img style={styles.titleIcon} src={homeData.descendName ? upIcon : downIcon} width="18"
+                             height="18"
+                             onClick={sortNameClick}/>
+                    </div>
                     <div className="col-3">
                         ICD codes
-                        <img style={styles.titleIcon} src={homeData.descend ? upIcon : downIcon} width="18" height="18"
-                             onClick={sortClick}/>
+                        <img style={styles.titleIcon} src={homeData.descendNumber ? upIcon : downIcon} width="18"
+                             height="18"
+                             onClick={sortNumberClick}/>
                     </div>
                 </div>
                 <hr className="hr"/>
                 {
                     homeData.participants.map((dataItem, index) => (
-                            // <OverlayTrigger>
-                            <Link to="detail" onClick={() => itemSelected(index)} style={styles.dataItem}>
+
+                            <Link
+                                to="detail"
+                                onClick={() => {
+                                    itemSelected(index)
+                                }}
+                                style={styles.dataItem}
+                                onMouseOver={() => {
+                                    handleHoverIndex(index)
+                                }}
+                                onMouseLeave={() => {
+                                    handleHoverIndex(-1)
+                                }}
+                                ref={(element) => {
+                                    refs[index] = element
+                                }
+                                }
+                            >
                                 <Card
-                                    style={index === homeData.index ? styles.selectedCardStyle : styles.unSelectedCardStyle}>
+                                    style={index === homeData.index || index === hoverIndex ? styles.selectedCardStyle : styles.unSelectedCardStyle}
+                                >
                                     <Card.Body>
                                         <div className="row">
                                             <body style={styles.tableBodyName}
-                                                  className="col-6">{dataItem.firstName} {dataItem.firstName}</body>
+                                                  className="col-6">{dataItem.firstName} {dataItem.lastName}</body>
                                             <body style={styles.tableBodyNumber} className="col-3">
                                             {dataItem.diagnoses.length}
                                             </body>
@@ -118,13 +154,18 @@ export function DetailPage() {
 const styles = {
     home: {
         backgroundColor: "#f6f7fa",
-        padding: 20
+        padding: 20,
+        height: "90vh",
+        overflowY: "hidden"
     },
     homeCard: {
         padding: 20,
         marginTop: 30,
         marginLeft: 60,
-        marginRight: 60
+        marginRight: 60,
+        marginBottom: 100,
+        height: "80vh",
+        overflowY: "scroll"
     },
     titleText: {
         color: '#062d8f',
@@ -152,6 +193,7 @@ const styles = {
         margin: 10,
         boxShadow: '2px 4px 10px rgba(0, 0, 0, 0.1)',
     },
+
     dataItem: {
         textDecoration: 'none'
     },
